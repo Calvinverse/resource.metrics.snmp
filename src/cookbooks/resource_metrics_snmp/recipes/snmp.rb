@@ -11,7 +11,7 @@
 # SNMP PACKAGES
 #
 
-%w[snmp snmp-mibs-downloader download-mibs ].each do |pkg|
+%w[snmp snmp-mibs-downloader download-mibs].each do |pkg|
   apt_package pkg do
     action :install
   end
@@ -37,7 +37,6 @@ directory telegraf_mib_directory do
   owner node['telegraf']['service_user']
 end
 
-
 #
 # MIBS
 #
@@ -60,7 +59,7 @@ end
 
 # This one isn't from UBNT but from Frogfoot Networks for reasons here:
 # https://community.ubnt.com/t5/UniFi-Feature-Requests/publish-SNMP-MIBs/idc-p/1606196#M5632
-file "#{telegraf_mib_directory}/UBNT-UniFi-MIB" do
+file "#{telegraf_mib_directory}/FROGFOOT-RESOURCES-MIB" do
   action :create
   content <<~MIB
     FROGFOOT-RESOURCES-MIB
@@ -430,7 +429,6 @@ file "#{telegraf_mib_directory}/UBNT-UniFi-MIB" do
         "A collection of objects providing information specific to
         processor load averages."
       ::= { resGroups 4 }
-
     END
   MIB
   group 'root'
@@ -537,6 +535,66 @@ file "#{consul_template_template_path}/#{telegraf_snpm_template_file}" do
           oid = "IF-MIB::ifDescr"
 
       ##
+      ## System Performance
+      ##
+
+      #  System load averages
+      [[inputs.snmp.table]]
+        oid = "FROGFOOT-RESOURCES-MIB::loadTable"
+        [[inputs.snmp.table.field]]
+          is_tag = true
+          oid = "FROGFOOT-RESOURCES-MIB::loadDescr"
+
+      ##
+      ## SNMP metrics
+      ##
+
+      #  Number of SNMP messages received
+      [[inputs.snmp.field]]
+        name = "snmpInPkts"
+        oid = "SNMPv2-MIB::snmpInPkts.0"
+
+      #  Number of SNMP Get-Request received
+      [[inputs.snmp.field]]
+        name = "snmpInGetRequests"
+        oid = "SNMPv2-MIB::snmpInGetRequests.0"
+
+      #  Number of SNMP Get-Next received
+      [[inputs.snmp.field]]
+        name = "snmpInGetNexts"
+        oid = "SNMPv2-MIB::snmpInGetNexts.0"
+
+      #  Number of SNMP objects requested
+      [[inputs.snmp.field]]
+        name = "snmpInTotalReqVars"
+        oid = "SNMPv2-MIB::snmpInTotalReqVars.0"
+
+      #  Number of SNMP Get-Response received
+      [[inputs.snmp.field]]
+        name = "snmpInGetResponses"
+        oid = "SNMPv2-MIB::snmpInGetResponses.0"
+
+      #  Number of SNMP messages sent
+      [[inputs.snmp.field]]
+        name = "snmpOutPkts"
+        oid = "SNMPv2-MIB::snmpOutPkts.0"
+
+      #  Number of SNMP Get-Request sent
+      [[inputs.snmp.field]]
+        name = "snmpOutGetRequests"
+        oid = "SNMPv2-MIB::snmpOutGetRequests.0"
+
+      #  Number of SNMP Get-Next sent
+      [[inputs.snmp.field]]
+        name = "snmpOutGetNexts"
+        oid = "SNMPv2-MIB::snmpOutGetNexts.0"
+
+      #  Number of SNMP Get-Response sent
+      [[inputs.snmp.field]]
+        name = "snmpOutGetResponses"
+        oid = "SNMPv2-MIB::snmpOutGetResponses.0"
+
+      ##
       ## Interface Details & Metrics
       ##
 
@@ -566,6 +624,97 @@ file "#{consul_template_template_path}/#{telegraf_snpm_template_file}" do
         [[inputs.snmp.table.field]]
           is_tag = true
           oid = "UBNT-UniFi-MIB::unifiIfName"
+
+    [inputs.snmp.tagpass]
+      influxdb_database = "system"
+
+
+    [[inputs.snmp]]
+      agents = [
+        {{range $index, $service := ls "config/environment/infrastructure/snmp/unifi/usw" }}{{if ne $index 0}},{{end}}"{{ .Value }}:161"{{end}}
+      ]
+      auth_password = {{ with secret "secret/environment/infrastructure/snmp/user" }}{{ if .Data.password }}"{{ .Data.password }}"{{ end }}{{ end }}
+      auth_protocol = "SHA"
+      name = "snmp.usw"
+      sec_level = "authNoPriv"
+      sec_name = "{{ keyOrDefault "config/environment/infrastructure/snmp/user" "this_is_not_a_valid_user" }}"
+      version = 3
+
+      ##
+      ## System Details
+      ##
+
+      #  System name (hostname)
+      [[inputs.snmp.field]]
+        is_tag = true
+        name = "sysName"
+        oid = "RFC1213-MIB::sysName.0"
+
+      #  System vendor OID
+      [[inputs.snmp.field]]
+        name = "sysObjectID"
+        oid = "RFC1213-MIB::sysObjectID.0"
+
+      #  System description
+      [[inputs.snmp.field]]
+        name = "sysDescr"
+        oid = "RFC1213-MIB::sysDescr.0"
+
+      #  System contact
+      [[inputs.snmp.field]]
+        name = "sysContact"
+        oid = "RFC1213-MIB::sysContact.0"
+
+      #  System location
+      [[inputs.snmp.field]]
+        name = "sysLocation"
+        oid = "RFC1213-MIB::sysLocation.0"
+
+      #  System uptime
+      [[inputs.snmp.field]]
+        name = "sysUpTime"
+        oid = "RFC1213-MIB::sysUpTime.0"
+
+      #  UAP model
+      [[inputs.snmp.field]]
+        name = "unifiApSystemModel"
+        oid = "UBNT-UniFi-MIB::unifiApSystemModel"
+
+      #  UAP firmware version
+      [[inputs.snmp.field]]
+        name = "unifiApSystemVersion"
+        oid = "UBNT-UniFi-MIB::unifiApSystemVersion"
+
+      ##
+      ## Host Resources
+      ##
+
+      #  Total memory
+      [[inputs.snmp.field]]
+        name = "memTotal"
+        oid = "FROGFOOT-RESOURCES-MIB::memTotal.0"
+
+      #  Free memory
+      [[inputs.snmp.field]]
+        name = "memFree"
+        oid = "FROGFOOT-RESOURCES-MIB::memFree.0"
+
+      #  Buffer memory
+      [[inputs.snmp.field]]
+        name = "memBuffer"
+        oid = "FROGFOOT-RESOURCES-MIB::memBuffer.0"
+
+      #  Cache memory
+      [[inputs.snmp.field]]
+        name = "memCache"
+        oid = "FROGFOOT-RESOURCES-MIB::memCache.0"
+
+      #  Per-interface traffic, errors, drops
+      [[inputs.snmp.table]]
+        oid = "IF-MIB::ifTable"
+        [[inputs.snmp.table.field]]
+          is_tag = true
+          oid = "IF-MIB::ifDescr"
 
       ##
       ## System Performance
@@ -627,24 +776,20 @@ file "#{consul_template_template_path}/#{telegraf_snpm_template_file}" do
         name = "snmpOutGetResponses"
         oid = "SNMPv2-MIB::snmpOutGetResponses.0"
 
-    [inputs.snmp.tagpass]
-      influxdb_database = "system"
+      ##
+      ## Interface Details & Metrics
+      ##
 
-    [[inputs.snmp]]
-      agents = [
-        {{range $index, $service := ls "config/environment/infrastructure/snmp/unifi/usw" }}{{if ne $index 0}},{{end}}"{{ .Value }}:161"{{end}}
-      ]
-      auth_password = {{ with secret "secret/environment/infrastructure/snmp/user" }}{{ if .Data.password }}"{{ .Data.password }}"{{ end }}{{ end }}
-      auth_protocol = "SHA"
-      name = "snmp.usw"
-      sec_level = "authNoPriv"
-      sec_name = "{{ keyOrDefault "config/environment/infrastructure/snmp/user" "this_is_not_a_valid_user" }}"
-      version = 3
-
-
+      #  Ethernet interfaces
+      [[inputs.snmp.table]]
+        oid = "UBNT-UniFi-MIB::unifiIfTable"
+        [[inputs.snmp.table.field]]
+          is_tag = true
+          oid = "UBNT-UniFi-MIB::unifiIfName"
 
     [inputs.snmp.tagpass]
       influxdb_database = "system"
+
 
     [[inputs.snmp]]
       agents = [
@@ -657,7 +802,152 @@ file "#{consul_template_template_path}/#{telegraf_snpm_template_file}" do
       sec_name = "{{ keyOrDefault "config/environment/infrastructure/snmp/user" "this_is_not_a_valid_user" }}"
       version = 3
 
+      ##
+      ## System Details
+      ##
 
+      #  System name (hostname)
+      [[inputs.snmp.field]]
+        is_tag = true
+        name = "sysName"
+        oid = "RFC1213-MIB::sysName.0"
+
+      #  System vendor OID
+      [[inputs.snmp.field]]
+        name = "sysObjectID"
+        oid = "RFC1213-MIB::sysObjectID.0"
+
+      #  System description
+      [[inputs.snmp.field]]
+        name = "sysDescr"
+        oid = "RFC1213-MIB::sysDescr.0"
+
+      #  System contact
+      [[inputs.snmp.field]]
+        name = "sysContact"
+        oid = "RFC1213-MIB::sysContact.0"
+
+      #  System location
+      [[inputs.snmp.field]]
+        name = "sysLocation"
+        oid = "RFC1213-MIB::sysLocation.0"
+
+      #  System uptime
+      [[inputs.snmp.field]]
+        name = "sysUpTime"
+        oid = "RFC1213-MIB::sysUpTime.0"
+
+      #  UAP model
+      [[inputs.snmp.field]]
+        name = "unifiApSystemModel"
+        oid = "UBNT-UniFi-MIB::unifiApSystemModel"
+
+      #  UAP firmware version
+      [[inputs.snmp.field]]
+        name = "unifiApSystemVersion"
+        oid = "UBNT-UniFi-MIB::unifiApSystemVersion"
+
+      ##
+      ## Host Resources
+      ##
+
+      #  Total memory
+      [[inputs.snmp.field]]
+        name = "memTotal"
+        oid = "FROGFOOT-RESOURCES-MIB::memTotal.0"
+
+      #  Free memory
+      [[inputs.snmp.field]]
+        name = "memFree"
+        oid = "FROGFOOT-RESOURCES-MIB::memFree.0"
+
+      #  Buffer memory
+      [[inputs.snmp.field]]
+        name = "memBuffer"
+        oid = "FROGFOOT-RESOURCES-MIB::memBuffer.0"
+
+      #  Cache memory
+      [[inputs.snmp.field]]
+        name = "memCache"
+        oid = "FROGFOOT-RESOURCES-MIB::memCache.0"
+
+      #  Per-interface traffic, errors, drops
+      [[inputs.snmp.table]]
+        oid = "IF-MIB::ifTable"
+        [[inputs.snmp.table.field]]
+          is_tag = true
+          oid = "IF-MIB::ifDescr"
+
+          ##
+      ## System Performance
+      ##
+
+      #  System load averages
+      [[inputs.snmp.table]]
+        oid = "FROGFOOT-RESOURCES-MIB::loadTable"
+        [[inputs.snmp.table.field]]
+          is_tag = true
+          oid = "FROGFOOT-RESOURCES-MIB::loadDescr"
+
+      ##
+      ## SNMP metrics
+      ##
+
+      #  Number of SNMP messages received
+      [[inputs.snmp.field]]
+        name = "snmpInPkts"
+        oid = "SNMPv2-MIB::snmpInPkts.0"
+
+      #  Number of SNMP Get-Request received
+      [[inputs.snmp.field]]
+        name = "snmpInGetRequests"
+        oid = "SNMPv2-MIB::snmpInGetRequests.0"
+
+      #  Number of SNMP Get-Next received
+      [[inputs.snmp.field]]
+        name = "snmpInGetNexts"
+        oid = "SNMPv2-MIB::snmpInGetNexts.0"
+
+      #  Number of SNMP objects requested
+      [[inputs.snmp.field]]
+        name = "snmpInTotalReqVars"
+        oid = "SNMPv2-MIB::snmpInTotalReqVars.0"
+
+      #  Number of SNMP Get-Response received
+      [[inputs.snmp.field]]
+        name = "snmpInGetResponses"
+        oid = "SNMPv2-MIB::snmpInGetResponses.0"
+
+      #  Number of SNMP messages sent
+      [[inputs.snmp.field]]
+        name = "snmpOutPkts"
+        oid = "SNMPv2-MIB::snmpOutPkts.0"
+
+      #  Number of SNMP Get-Request sent
+      [[inputs.snmp.field]]
+        name = "snmpOutGetRequests"
+        oid = "SNMPv2-MIB::snmpOutGetRequests.0"
+
+      #  Number of SNMP Get-Next sent
+      [[inputs.snmp.field]]
+        name = "snmpOutGetNexts"
+        oid = "SNMPv2-MIB::snmpOutGetNexts.0"
+
+      #  Number of SNMP Get-Response sent
+      [[inputs.snmp.field]]
+        name = "snmpOutGetResponses"
+        oid = "SNMPv2-MIB::snmpOutGetResponses.0"
+
+      ##
+      ## Interface Details & Metrics
+      ##
+
+      #  Ethernet interfaces
+      [[inputs.snmp.table]]
+        oid = "UBNT-UniFi-MIB::unifiIfTable"
+        [[inputs.snmp.table.field]]
+          is_tag = true
+          oid = "UBNT-UniFi-MIB::unifiIfName"
 
     [inputs.snmp.tagpass]
       influxdb_database = "system"
@@ -693,7 +983,7 @@ file "#{consul_template_config_path}/telegraf_snmp.hcl" do
       # command will only run if the resulting template changes. The command must
       # return within 30s (configurable), and it must have a successful exit code.
       # Consul Template is not a replacement for a process monitor or init system.
-      command = "chown #{node['telegraf']['service_user']}:#{node['telegraf']['service_group']} #{node['telegraf']['config_directory']}/#{telegraf_snmp_file} && systemctl restart #{node['telegraf']['service_name']}"
+      command = "/bin/bash -c 'chown #{node['telegraf']['service_user']}:#{node['telegraf']['service_group']} #{node['telegraf']['config_directory']}/#{telegraf_snmp_file} && systemctl restart #{node['telegraf']['service_name']}'"
 
       # This is the maximum amount of time to wait for the optional command to
       # return. Default is 30s.
