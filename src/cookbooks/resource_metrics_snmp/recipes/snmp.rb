@@ -11,7 +11,7 @@
 # SNMP PACKAGES
 #
 
-%w[snmp snmp-mibs-downloader download-mibs].each do |pkg|
+%w[snmp snmp-mibs-downloader].each do |pkg|
   apt_package pkg do
     action :install
   end

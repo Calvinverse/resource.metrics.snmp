@@ -13,10 +13,6 @@ describe 'resource_metrics_snmp::snmp' do
     it 'installs the snmp binary' do
       expect(chef_run).to install_apt_package('snmp-mibs-downloader')
     end
-
-    it 'installs the snmp binary' do
-      expect(chef_run).to install_apt_package('download-mibs')
-    end
   end
 
   context 'copies the MIB files' do
