@@ -7,6 +7,6 @@
             target="" />
         <file
             src="${DirTemp}\${ImageName}\**\*.*"
-            target="" />
+            target="resource" />
     </files>
 </archive>
