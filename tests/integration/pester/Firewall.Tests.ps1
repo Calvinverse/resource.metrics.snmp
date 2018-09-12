@@ -49,12 +49,6 @@ Describe 'The firewall' {
         }
     }
 
-    Context 'should allow grafana' {
-        It 'on port 3000'{
-            ($ufwOutput | Where-Object {$_ -match '(3000/tcp)\s*(ALLOW)\s*(Anywhere)'} ) | Should Not Be $null
-        }
-    }
-
     Context 'should allow telegraf' {
         It 'on TCP port 8125' {
             ($ufwOutput | Where-Object {$_ -match '(8125/tcp)\s*(ALLOW)\s*(Anywhere)'} ) | Should Not Be $null
