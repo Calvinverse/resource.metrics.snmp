@@ -19,7 +19,7 @@ describe 'resource_metrics_snmp::snmp' do
     let(:chef_run) { ChefSpec::SoloRunner.converge(described_recipe) }
 
     it 'creates the snmp directory' do
-      expect(chef_run).to create_directory('usr/local/share/snmp').with(
+      expect(chef_run).to create_directory('/usr/share/snmp').with(
         group: 'telegraf',
         owner: 'telegraf',
         mode: '0755'
@@ -27,7 +27,7 @@ describe 'resource_metrics_snmp::snmp' do
     end
 
     it 'creates the mib directory' do
-      expect(chef_run).to create_directory('usr/local/share/snmp/mibs').with(
+      expect(chef_run).to create_directory('/usr/share/snmp/mibs').with(
         group: 'telegraf',
         owner: 'telegraf',
         mode: '0755'
@@ -35,13 +35,13 @@ describe 'resource_metrics_snmp::snmp' do
     end
 
     it 'downloads the UBNT-MIB file' do
-      expect(chef_run).to create_remote_file('usr/local/share/snmp/mibs/UBNT-MIB').with(
+      expect(chef_run).to create_remote_file('/usr/share/snmp/mibs/UBNT-MIB').with(
         source: 'http://dl.ubnt-ut.com/snmp/UBNT-MIB'
       )
     end
 
     it 'downloads the UBNT-UniFi-MIB file' do
-      expect(chef_run).to create_remote_file('usr/local/share/snmp/mibs/UBNT-UniFi-MIB').with(
+      expect(chef_run).to create_remote_file('/usr/share/snmp/mibs/UBNT-UniFi-MIB').with(
         source: 'http://dl.ubnt-ut.com/snmp/UBNT-UniFi-MIB'
       )
     end
@@ -417,7 +417,7 @@ describe 'resource_metrics_snmp::snmp' do
       END
     CONF
     it 'creates the FROGFOOT-RESOURCES-MIB file' do
-      expect(chef_run).to create_file('usr/local/share/snmp/mibs/FROGFOOT-RESOURCES-MIB')
+      expect(chef_run).to create_file('/usr/share/snmp/mibs/FROGFOOT-RESOURCES-MIB')
         .with_content(frogfoot_mib_content)
         .with(
           group: 'root',

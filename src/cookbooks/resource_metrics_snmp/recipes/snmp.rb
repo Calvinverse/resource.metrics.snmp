@@ -21,7 +21,7 @@ end
 # DIRECTORIES
 #
 
-telegraf_snmp_directory = 'usr/local/share/snmp'
+telegraf_snmp_directory = '/usr/share/snmp'
 directory telegraf_snmp_directory do
   action :create
   group node['telegraf']['service_group']
