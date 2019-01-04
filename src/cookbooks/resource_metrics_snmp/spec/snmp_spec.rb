@@ -430,16 +430,18 @@ describe 'resource_metrics_snmp::snmp' do
   context 'adds the consul-template files' do
     let(:chef_run) { ChefSpec::SoloRunner.converge(described_recipe) }
 
-    telegraf_snmp_template_content = <<~CONF
+    telegraf_snmp_uap_template_content = <<~CONF
       [[inputs.snmp]]
         agents = [
           {{range $index, $service := ls "config/environment/infrastructure/snmp/unifi/uap" }}{{if ne $index 0}},{{end}}"{{ .Value }}:161"{{end}}
         ]
-        auth_password = {{ with secret "secret/environment/infrastructure/snmp/user" }}{{ if .Data.password }}"{{ .Data.password }}"{{ end }}{{ end }}
+        auth_password = {{ with secret "secret/environment/infrastructure/snmp/user" }}{{ if .Data.password }}'{{ .Data.password }}'{{ end }}{{ end }}
         auth_protocol = "SHA"
         name = "snmp.uap"
-        sec_level = "authNoPriv"
-        sec_name = "{{ keyOrDefault "config/environment/infrastructure/snmp/user" "this_is_not_a_valid_user" }}"
+        priv_password = {{ with secret "secret/environment/infrastructure/snmp/user" }}{{ if .Data.password }}'{{ .Data.password }}'{{ end }}{{ end }}
+        priv_protocol = "AES"
+        sec_level = "authPriv"
+        sec_name = '{{ keyOrDefault "config/environment/infrastructure/snmp/user" "this_is_not_a_valid_user" }}'
         version = 3
 
         ##
@@ -609,19 +611,106 @@ describe 'resource_metrics_snmp::snmp' do
             is_tag = true
             oid = "UBNT-UniFi-MIB::unifiIfName"
 
-      [inputs.snmp.tagpass]
-        influxdb_database = "system"
+        [inputs.snmp.tagpass]
+          influxdb_database = "system"
+    CONF
+    it 'creates telegraf snmp uap input template file in the consul-template template directory' do
+      expect(chef_run).to create_file('/etc/consul-template.d/templates/telegraf_snmp_uap.ctmpl')
+        .with_content(telegraf_snmp_uap_template_content)
+        .with(
+          group: 'root',
+          owner: 'root',
+          mode: '0550'
+        )
+    end
 
+    consul_template_telegraf_snmp_uap_content = <<~CONF
+      # This block defines the configuration for a template. Unlike other blocks,
+      # this block may be specified multiple times to configure multiple templates.
+      # It is also possible to configure templates via the CLI directly.
+      template {
+        # This is the source file on disk to use as the input template. This is often
+        # called the "Consul Template template". This option is required if not using
+        # the `contents` option.
+        source = "/etc/consul-template.d/templates/telegraf_snmp_uap.ctmpl"
 
+        # This is the destination path on disk where the source template will render.
+        # If the parent directories do not exist, Consul Template will attempt to
+        # create them, unless create_dest_dirs is false.
+        destination = "/etc/telegraf/telegraf.d/inputs_snmp_uap.conf"
+
+        # This options tells Consul Template to create the parent directories of the
+        # destination path if they do not exist. The default value is true.
+        create_dest_dirs = false
+
+        # This is the optional command to run when the template is rendered. The
+        # command will only run if the resulting template changes. The command must
+        # return within 30s (configurable), and it must have a successful exit code.
+        # Consul Template is not a replacement for a process monitor or init system.
+        command = "/bin/bash -c 'chown telegraf:telegraf /etc/telegraf/telegraf.d/inputs_snmp_uap.conf && systemctl restart telegraf'"
+
+        # This is the maximum amount of time to wait for the optional command to
+        # return. Default is 30s.
+        command_timeout = "30s"
+
+        # Exit with an error when accessing a struct or map field/key that does not
+        # exist. The default behavior will print "<no value>" when accessing a field
+        # that does not exist. It is highly recommended you set this to "true" when
+        # retrieving secrets from Vault.
+        error_on_missing_key = false
+
+        # This is the permission to render the file. If this option is left
+        # unspecified, Consul Template will attempt to match the permissions of the
+        # file that already exists at the destination path. If no file exists at that
+        # path, the permissions are 0644.
+        perms = 0550
+
+        # This option backs up the previously rendered template at the destination
+        # path before writing a new one. It keeps exactly one backup. This option is
+        # useful for preventing accidental changes to the data without having a
+        # rollback strategy.
+        backup = true
+
+        # These are the delimiters to use in the template. The default is "{{" and
+        # "}}", but for some templates, it may be easier to use a different delimiter
+        # that does not conflict with the output file itself.
+        left_delimiter  = "{{"
+        right_delimiter = "}}"
+
+        # This is the `minimum(:maximum)` to wait before rendering a new template to
+        # disk and triggering a command, separated by a colon (`:`). If the optional
+        # maximum value is omitted, it is assumed to be 4x the required minimum value.
+        # This is a numeric time with a unit suffix ("5s"). There is no default value.
+        # The wait value for a template takes precedence over any globally-configured
+        # wait.
+        wait {
+          min = "2s"
+          max = "10s"
+        }
+      }
+    CONF
+    it 'creates telegraf_snmp_uap.hcl in the consul-template template directory' do
+      expect(chef_run).to create_file('/etc/consul-template.d/conf/telegraf_snmp_uap.hcl')
+        .with_content(consul_template_telegraf_snmp_uap_content)
+        .with(
+          group: 'root',
+          owner: 'root',
+          mode: '0550'
+        )
+    end
+
+    telegraf_snmp_usw_template_content = <<~CONF
       [[inputs.snmp]]
         agents = [
           {{range $index, $service := ls "config/environment/infrastructure/snmp/unifi/usw" }}{{if ne $index 0}},{{end}}"{{ .Value }}:161"{{end}}
         ]
-        auth_password = {{ with secret "secret/environment/infrastructure/snmp/user" }}{{ if .Data.password }}"{{ .Data.password }}"{{ end }}{{ end }}
+        auth_password = {{ with secret "secret/environment/infrastructure/snmp/user" }}{{ if .Data.password }}'{{ .Data.password }}'{{ end }}{{ end }}
         auth_protocol = "SHA"
         name = "snmp.usw"
-        sec_level = "authNoPriv"
-        sec_name = "{{ keyOrDefault "config/environment/infrastructure/snmp/user" "this_is_not_a_valid_user" }}"
+        priv_password = {{ with secret "secret/environment/infrastructure/snmp/user" }}{{ if .Data.password }}'{{ .Data.password }}'{{ end }}{{ end }}
+        priv_protocol = "AES"
+        sec_level = "authPriv"
+        sec_name = '{{ keyOrDefault "config/environment/infrastructure/snmp/user" "this_is_not_a_valid_user" }}'
         version = 3
 
         ##
@@ -771,19 +860,106 @@ describe 'resource_metrics_snmp::snmp' do
             is_tag = true
             oid = "UBNT-UniFi-MIB::unifiIfName"
 
-      [inputs.snmp.tagpass]
-        influxdb_database = "system"
+        [inputs.snmp.tagpass]
+          influxdb_database = "system"
+    CONF
+    it 'creates telegraf snmp usw input template file in the consul-template template directory' do
+      expect(chef_run).to create_file('/etc/consul-template.d/templates/telegraf_snmp_usw.ctmpl')
+        .with_content(telegraf_snmp_usw_template_content)
+        .with(
+          group: 'root',
+          owner: 'root',
+          mode: '0550'
+        )
+    end
 
+    consul_template_telegraf_snmp_usw_content = <<~CONF
+      # This block defines the configuration for a template. Unlike other blocks,
+      # this block may be specified multiple times to configure multiple templates.
+      # It is also possible to configure templates via the CLI directly.
+      template {
+        # This is the source file on disk to use as the input template. This is often
+        # called the "Consul Template template". This option is required if not using
+        # the `contents` option.
+        source = "/etc/consul-template.d/templates/telegraf_snmp_usw.ctmpl"
 
+        # This is the destination path on disk where the source template will render.
+        # If the parent directories do not exist, Consul Template will attempt to
+        # create them, unless create_dest_dirs is false.
+        destination = "/etc/telegraf/telegraf.d/inputs_snmp_usw.conf"
+
+        # This options tells Consul Template to create the parent directories of the
+        # destination path if they do not exist. The default value is true.
+        create_dest_dirs = false
+
+        # This is the optional command to run when the template is rendered. The
+        # command will only run if the resulting template changes. The command must
+        # return within 30s (configurable), and it must have a successful exit code.
+        # Consul Template is not a replacement for a process monitor or init system.
+        command = "/bin/bash -c 'chown telegraf:telegraf /etc/telegraf/telegraf.d/inputs_snmp_usw.conf && systemctl restart telegraf'"
+
+        # This is the maximum amount of time to wait for the optional command to
+        # return. Default is 30s.
+        command_timeout = "30s"
+
+        # Exit with an error when accessing a struct or map field/key that does not
+        # exist. The default behavior will print "<no value>" when accessing a field
+        # that does not exist. It is highly recommended you set this to "true" when
+        # retrieving secrets from Vault.
+        error_on_missing_key = false
+
+        # This is the permission to render the file. If this option is left
+        # unspecified, Consul Template will attempt to match the permissions of the
+        # file that already exists at the destination path. If no file exists at that
+        # path, the permissions are 0644.
+        perms = 0550
+
+        # This option backs up the previously rendered template at the destination
+        # path before writing a new one. It keeps exactly one backup. This option is
+        # useful for preventing accidental changes to the data without having a
+        # rollback strategy.
+        backup = true
+
+        # These are the delimiters to use in the template. The default is "{{" and
+        # "}}", but for some templates, it may be easier to use a different delimiter
+        # that does not conflict with the output file itself.
+        left_delimiter  = "{{"
+        right_delimiter = "}}"
+
+        # This is the `minimum(:maximum)` to wait before rendering a new template to
+        # disk and triggering a command, separated by a colon (`:`). If the optional
+        # maximum value is omitted, it is assumed to be 4x the required minimum value.
+        # This is a numeric time with a unit suffix ("5s"). There is no default value.
+        # The wait value for a template takes precedence over any globally-configured
+        # wait.
+        wait {
+          min = "2s"
+          max = "10s"
+        }
+      }
+    CONF
+    it 'creates telegraf_snmp_usw.hcl in the consul-template template directory' do
+      expect(chef_run).to create_file('/etc/consul-template.d/conf/telegraf_snmp_usw.hcl')
+        .with_content(consul_template_telegraf_snmp_usw_content)
+        .with(
+          group: 'root',
+          owner: 'root',
+          mode: '0550'
+        )
+    end
+
+    telegraf_snmp_usg_template_content = <<~CONF
       [[inputs.snmp]]
         agents = [
           {{range $index, $service := ls "config/environment/infrastructure/snmp/unifi/usg" }}{{if ne $index 0}},{{end}}"{{ .Value }}:161"{{end}}
         ]
-        auth_password = {{ with secret "secret/environment/infrastructure/snmp/user" }}{{ if .Data.password }}"{{ .Data.password }}"{{ end }}{{ end }}
+        auth_password = {{ with secret "secret/environment/infrastructure/snmp/user" }}{{ if .Data.password }}'{{ .Data.password }}'{{ end }}{{ end }}
         auth_protocol = "SHA"
         name = "snmp.usg"
-        sec_level = "authNoPriv"
-        sec_name = "{{ keyOrDefault "config/environment/infrastructure/snmp/user" "this_is_not_a_valid_user" }}"
+        priv_password = {{ with secret "secret/environment/infrastructure/snmp/user" }}{{ if .Data.password }}'{{ .Data.password }}'{{ end }}{{ end }}
+        priv_protocol = "AES"
+        sec_level = "authPriv"
+        sec_name = '{{ keyOrDefault "config/environment/infrastructure/snmp/user" "this_is_not_a_valid_user" }}'
         version = 3
 
         ##
@@ -933,12 +1109,12 @@ describe 'resource_metrics_snmp::snmp' do
             is_tag = true
             oid = "UBNT-UniFi-MIB::unifiIfName"
 
-      [inputs.snmp.tagpass]
-        influxdb_database = "system"
+        [inputs.snmp.tagpass]
+          influxdb_database = "system"
     CONF
-    it 'creates telegraf snmp input template file in the consul-template template directory' do
-      expect(chef_run).to create_file('/etc/consul-template.d/templates/telegraf_snmp.ctmpl')
-        .with_content(telegraf_snmp_template_content)
+    it 'creates telegraf snmp usg input template file in the consul-template template directory' do
+      expect(chef_run).to create_file('/etc/consul-template.d/templates/telegraf_snmp_usg.ctmpl')
+        .with_content(telegraf_snmp_usg_template_content)
         .with(
           group: 'root',
           owner: 'root',
@@ -946,7 +1122,7 @@ describe 'resource_metrics_snmp::snmp' do
         )
     end
 
-    consul_template_telegraf_snmp_content = <<~CONF
+    consul_template_telegraf_snmp_usg_content = <<~CONF
       # This block defines the configuration for a template. Unlike other blocks,
       # this block may be specified multiple times to configure multiple templates.
       # It is also possible to configure templates via the CLI directly.
@@ -954,12 +1130,12 @@ describe 'resource_metrics_snmp::snmp' do
         # This is the source file on disk to use as the input template. This is often
         # called the "Consul Template template". This option is required if not using
         # the `contents` option.
-        source = "/etc/consul-template.d/templates/telegraf_snmp.ctmpl"
+        source = "/etc/consul-template.d/templates/telegraf_snmp_usg.ctmpl"
 
         # This is the destination path on disk where the source template will render.
         # If the parent directories do not exist, Consul Template will attempt to
         # create them, unless create_dest_dirs is false.
-        destination = "/etc/telegraf/telegraf.d/inputs_snmp.conf"
+        destination = "/etc/telegraf/telegraf.d/inputs_snmp_usg.conf"
 
         # This options tells Consul Template to create the parent directories of the
         # destination path if they do not exist. The default value is true.
@@ -969,7 +1145,7 @@ describe 'resource_metrics_snmp::snmp' do
         # command will only run if the resulting template changes. The command must
         # return within 30s (configurable), and it must have a successful exit code.
         # Consul Template is not a replacement for a process monitor or init system.
-        command = "/bin/bash -c 'chown telegraf:telegraf /etc/telegraf/telegraf.d/inputs_snmp.conf && systemctl restart telegraf'"
+        command = "/bin/bash -c 'chown telegraf:telegraf /etc/telegraf/telegraf.d/inputs_snmp_usg.conf && systemctl restart telegraf'"
 
         # This is the maximum amount of time to wait for the optional command to
         # return. Default is 30s.
@@ -1011,9 +1187,9 @@ describe 'resource_metrics_snmp::snmp' do
         }
       }
     CONF
-    it 'creates telegraf_snmp.hcl in the consul-template template directory' do
-      expect(chef_run).to create_file('/etc/consul-template.d/conf/telegraf_snmp.hcl')
-        .with_content(consul_template_telegraf_snmp_content)
+    it 'creates telegraf_snmp_usg.hcl in the consul-template template directory' do
+      expect(chef_run).to create_file('/etc/consul-template.d/conf/telegraf_snmp_usg.hcl')
+        .with_content(consul_template_telegraf_snmp_usg_content)
         .with(
           group: 'root',
           owner: 'root',
