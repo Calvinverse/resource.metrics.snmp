@@ -636,7 +636,7 @@ file "#{consul_template_template_path}/#{telegraf_snpm_uap_template_file}" do
 end
 
 telegraf_snmp_uap_file = 'inputs_snmp_uap.conf'
-file "#{consul_template_config_path}/telegraf_snmp.hcl" do
+file "#{consul_template_config_path}/telegraf_snmp_uap.hcl" do
   action :create
   content <<~HCL
     # This block defines the configuration for a template. Unlike other blocks,
@@ -880,8 +880,8 @@ file "#{consul_template_template_path}/#{telegraf_snpm_usw_template_file}" do
   owner 'root'
 end
 
-telegraf_snmp_usw_file = 'inputs_snmp.conf'
-file "#{consul_template_config_path}/telegraf_snmp.hcl" do
+telegraf_snmp_usw_file = 'inputs_snmp_usw.conf'
+file "#{consul_template_config_path}/telegraf_snmp_usw.hcl" do
   action :create
   content <<~HCL
     # This block defines the configuration for a template. Unlike other blocks,
@@ -953,9 +953,8 @@ file "#{consul_template_config_path}/telegraf_snmp.hcl" do
   owner 'root'
 end
 
-telegraf_snmp_usg_file = 
-telegraf_snpm_usg_template_file = 'telegraf_snmp_usg.ctmpl'
-file "#{consul_template_template_path}/#{telegraf_snpm_usg_template_file}" do
+telegraf_snmp_usg_template_file = 'telegraf_snmp_usg.ctmpl'
+file "#{consul_template_template_path}/#{telegraf_snmp_usg_template_file}" do
   action :create
   content <<~CONFIG
     [[inputs.snmp]]
@@ -1126,7 +1125,7 @@ file "#{consul_template_template_path}/#{telegraf_snpm_usg_template_file}" do
   owner 'root'
 end
 
-telegraf_snmp_usg_file = 'inputs_snmp.conf'
+telegraf_snmp_usg_file = 'inputs_snmp_usg.conf'
 file "#{consul_template_config_path}/telegraf_snmp_usg.hcl" do
   action :create
   content <<~HCL
@@ -1137,7 +1136,7 @@ file "#{consul_template_config_path}/telegraf_snmp_usg.hcl" do
       # This is the source file on disk to use as the input template. This is often
       # called the "Consul Template template". This option is required if not using
       # the `contents` option.
-      source = "#{consul_template_template_path}/#{telegraf_snpm_usg_template_file}"
+      source = "#{consul_template_template_path}/#{telegraf_snmp_usg_template_file}"
 
       # This is the destination path on disk where the source template will render.
       # If the parent directories do not exist, Consul Template will attempt to
