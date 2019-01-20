@@ -451,70 +451,68 @@ describe 'resource_metrics_snmp::snmp' do
         #  System name (hostname)
         [[inputs.snmp.field]]
           is_tag = true
-          name = "sysName"
+          name = "name"
           oid = "RFC1213-MIB::sysName.0"
-
-        #  System vendor OID
-        [[inputs.snmp.field]]
-          name = "sysObjectID"
-          oid = "RFC1213-MIB::sysObjectID.0"
 
         #  System description
         [[inputs.snmp.field]]
-          name = "sysDescr"
+          name = "description"
           oid = "RFC1213-MIB::sysDescr.0"
-
-        #  System contact
-        [[inputs.snmp.field]]
-          name = "sysContact"
-          oid = "RFC1213-MIB::sysContact.0"
-
-        #  System location
-        [[inputs.snmp.field]]
-          name = "sysLocation"
-          oid = "RFC1213-MIB::sysLocation.0"
 
         #  System uptime
         [[inputs.snmp.field]]
-          name = "sysUpTime"
-          oid = "RFC1213-MIB::sysUpTime.0"
+          name = "uptime"
+          oid = "HOST-RESOURCES-MIB::hrSystemUptime.0"
 
         #  UAP model
         [[inputs.snmp.field]]
-          name = "unifiApSystemModel"
+          is_tag = true
+          name = "model"
           oid = "UBNT-UniFi-MIB::unifiApSystemModel"
 
         #  UAP firmware version
         [[inputs.snmp.field]]
-          name = "unifiApSystemVersion"
+          is_tag = true
+          name = "version"
           oid = "UBNT-UniFi-MIB::unifiApSystemVersion"
 
         ##
         ## Host Resources
         ##
 
+        #  Number of user sessions
+        [[inputs.snmp.field]]
+          name = "users"
+          oid = "HOST-RESOURCES-MIB::hrSystemNumUsers.0"
+
+        #  Number of process contexts
+        [[inputs.snmp.field]]
+          name = "processes"
+          oid = "HOST-RESOURCES-MIB::hrSystemProcesses.0"
+
         #  Total memory
         [[inputs.snmp.field]]
-          name = "memTotal"
+          name = "mem.total"
           oid = "FROGFOOT-RESOURCES-MIB::memTotal.0"
 
         #  Free memory
         [[inputs.snmp.field]]
-          name = "memFree"
+          name = "mem.free"
           oid = "FROGFOOT-RESOURCES-MIB::memFree.0"
 
         #  Buffer memory
         [[inputs.snmp.field]]
-          name = "memBuffer"
+          name = "mem.buffer"
           oid = "FROGFOOT-RESOURCES-MIB::memBuffer.0"
 
         #  Cache memory
         [[inputs.snmp.field]]
-          name = "memCache"
+          name = "mem.cache"
           oid = "FROGFOOT-RESOURCES-MIB::memCache.0"
 
         #  Per-interface traffic, errors, drops
         [[inputs.snmp.table]]
+          name = "snmp.uap.interfaces"
           oid = "IF-MIB::ifTable"
           [[inputs.snmp.table.field]]
             is_tag = true
@@ -526,59 +524,11 @@ describe 'resource_metrics_snmp::snmp' do
 
         #  System load averages
         [[inputs.snmp.table]]
+          name = "snmp.uap.load"
           oid = "FROGFOOT-RESOURCES-MIB::loadTable"
           [[inputs.snmp.table.field]]
             is_tag = true
             oid = "FROGFOOT-RESOURCES-MIB::loadDescr"
-
-        ##
-        ## SNMP metrics
-        ##
-
-        #  Number of SNMP messages received
-        [[inputs.snmp.field]]
-          name = "snmpInPkts"
-          oid = "SNMPv2-MIB::snmpInPkts.0"
-
-        #  Number of SNMP Get-Request received
-        [[inputs.snmp.field]]
-          name = "snmpInGetRequests"
-          oid = "SNMPv2-MIB::snmpInGetRequests.0"
-
-        #  Number of SNMP Get-Next received
-        [[inputs.snmp.field]]
-          name = "snmpInGetNexts"
-          oid = "SNMPv2-MIB::snmpInGetNexts.0"
-
-        #  Number of SNMP objects requested
-        [[inputs.snmp.field]]
-          name = "snmpInTotalReqVars"
-          oid = "SNMPv2-MIB::snmpInTotalReqVars.0"
-
-        #  Number of SNMP Get-Response received
-        [[inputs.snmp.field]]
-          name = "snmpInGetResponses"
-          oid = "SNMPv2-MIB::snmpInGetResponses.0"
-
-        #  Number of SNMP messages sent
-        [[inputs.snmp.field]]
-          name = "snmpOutPkts"
-          oid = "SNMPv2-MIB::snmpOutPkts.0"
-
-        #  Number of SNMP Get-Request sent
-        [[inputs.snmp.field]]
-          name = "snmpOutGetRequests"
-          oid = "SNMPv2-MIB::snmpOutGetRequests.0"
-
-        #  Number of SNMP Get-Next sent
-        [[inputs.snmp.field]]
-          name = "snmpOutGetNexts"
-          oid = "SNMPv2-MIB::snmpOutGetNexts.0"
-
-        #  Number of SNMP Get-Response sent
-        [[inputs.snmp.field]]
-          name = "snmpOutGetResponses"
-          oid = "SNMPv2-MIB::snmpOutGetResponses.0"
 
         ##
         ## Interface Details & Metrics
@@ -586,6 +536,7 @@ describe 'resource_metrics_snmp::snmp' do
 
         #  Wireless interfaces
         [[inputs.snmp.table]]
+          name = "snmp.uap.interfaces.wireless"
           oid = "UBNT-UniFi-MIB::unifiRadioTable"
           [[inputs.snmp.table.field]]
             is_tag = true
@@ -596,6 +547,7 @@ describe 'resource_metrics_snmp::snmp' do
 
         #  BSS instances
         [[inputs.snmp.table]]
+          name = "snmp.uap.virtualaccesspoints"
           oid = "UBNT-UniFi-MIB::unifiVapTable"
           [[inputs.snmp.table.field]]
             is_tag = true
@@ -606,12 +558,13 @@ describe 'resource_metrics_snmp::snmp' do
 
         #  Ethernet interfaces
         [[inputs.snmp.table]]
+          name = "snmp.uap.interfaces.ethernet"
           oid = "UBNT-UniFi-MIB::unifiIfTable"
           [[inputs.snmp.table.field]]
             is_tag = true
             oid = "UBNT-UniFi-MIB::unifiIfName"
 
-        [inputs.snmp.tagpass]
+        [inputs.snmp.tags]
           influxdb_database = "system"
     CONF
     it 'creates telegraf snmp uap input template file in the consul-template template directory' do
@@ -720,42 +673,29 @@ describe 'resource_metrics_snmp::snmp' do
         #  System name (hostname)
         [[inputs.snmp.field]]
           is_tag = true
-          name = "sysName"
+          name = "name"
           oid = "RFC1213-MIB::sysName.0"
-
-        #  System vendor OID
-        [[inputs.snmp.field]]
-          name = "sysObjectID"
-          oid = "RFC1213-MIB::sysObjectID.0"
 
         #  System description
         [[inputs.snmp.field]]
-          name = "sysDescr"
+          name = "description"
           oid = "RFC1213-MIB::sysDescr.0"
-
-        #  System contact
-        [[inputs.snmp.field]]
-          name = "sysContact"
-          oid = "RFC1213-MIB::sysContact.0"
-
-        #  System location
-        [[inputs.snmp.field]]
-          name = "sysLocation"
-          oid = "RFC1213-MIB::sysLocation.0"
 
         #  System uptime
         [[inputs.snmp.field]]
-          name = "sysUpTime"
-          oid = "RFC1213-MIB::sysUpTime.0"
+          name = "uptime"
+          oid = "HOST-RESOURCES-MIB::hrSystemUptime.0"
 
         #  UAP model
         [[inputs.snmp.field]]
-          name = "unifiApSystemModel"
+          is_tag = true
+          name = "model"
           oid = "UBNT-UniFi-MIB::unifiApSystemModel"
 
         #  UAP firmware version
         [[inputs.snmp.field]]
-          name = "unifiApSystemVersion"
+          is_tag = true
+          name = "version"
           oid = "UBNT-UniFi-MIB::unifiApSystemVersion"
 
         ##
@@ -764,26 +704,27 @@ describe 'resource_metrics_snmp::snmp' do
 
         #  Total memory
         [[inputs.snmp.field]]
-          name = "memTotal"
+          name = "mem.total"
           oid = "FROGFOOT-RESOURCES-MIB::memTotal.0"
 
         #  Free memory
         [[inputs.snmp.field]]
-          name = "memFree"
+          name = "mem.free"
           oid = "FROGFOOT-RESOURCES-MIB::memFree.0"
 
         #  Buffer memory
         [[inputs.snmp.field]]
-          name = "memBuffer"
+          name = "mem.uffer"
           oid = "FROGFOOT-RESOURCES-MIB::memBuffer.0"
 
         #  Cache memory
         [[inputs.snmp.field]]
-          name = "memCache"
+          name = "mem.cache"
           oid = "FROGFOOT-RESOURCES-MIB::memCache.0"
 
         #  Per-interface traffic, errors, drops
         [[inputs.snmp.table]]
+          name = "snmp.usw.interfaces"
           oid = "IF-MIB::ifTable"
           [[inputs.snmp.table.field]]
             is_tag = true
@@ -795,59 +736,11 @@ describe 'resource_metrics_snmp::snmp' do
 
         #  System load averages
         [[inputs.snmp.table]]
+          name = "snmp.usw.load"
           oid = "FROGFOOT-RESOURCES-MIB::loadTable"
           [[inputs.snmp.table.field]]
             is_tag = true
             oid = "FROGFOOT-RESOURCES-MIB::loadDescr"
-
-        ##
-        ## SNMP metrics
-        ##
-
-        #  Number of SNMP messages received
-        [[inputs.snmp.field]]
-          name = "snmpInPkts"
-          oid = "SNMPv2-MIB::snmpInPkts.0"
-
-        #  Number of SNMP Get-Request received
-        [[inputs.snmp.field]]
-          name = "snmpInGetRequests"
-          oid = "SNMPv2-MIB::snmpInGetRequests.0"
-
-        #  Number of SNMP Get-Next received
-        [[inputs.snmp.field]]
-          name = "snmpInGetNexts"
-          oid = "SNMPv2-MIB::snmpInGetNexts.0"
-
-        #  Number of SNMP objects requested
-        [[inputs.snmp.field]]
-          name = "snmpInTotalReqVars"
-          oid = "SNMPv2-MIB::snmpInTotalReqVars.0"
-
-        #  Number of SNMP Get-Response received
-        [[inputs.snmp.field]]
-          name = "snmpInGetResponses"
-          oid = "SNMPv2-MIB::snmpInGetResponses.0"
-
-        #  Number of SNMP messages sent
-        [[inputs.snmp.field]]
-          name = "snmpOutPkts"
-          oid = "SNMPv2-MIB::snmpOutPkts.0"
-
-        #  Number of SNMP Get-Request sent
-        [[inputs.snmp.field]]
-          name = "snmpOutGetRequests"
-          oid = "SNMPv2-MIB::snmpOutGetRequests.0"
-
-        #  Number of SNMP Get-Next sent
-        [[inputs.snmp.field]]
-          name = "snmpOutGetNexts"
-          oid = "SNMPv2-MIB::snmpOutGetNexts.0"
-
-        #  Number of SNMP Get-Response sent
-        [[inputs.snmp.field]]
-          name = "snmpOutGetResponses"
-          oid = "SNMPv2-MIB::snmpOutGetResponses.0"
 
         ##
         ## Interface Details & Metrics
@@ -855,12 +748,13 @@ describe 'resource_metrics_snmp::snmp' do
 
         #  Ethernet interfaces
         [[inputs.snmp.table]]
+          name = "snmp.usw.interfaces.ethernet"
           oid = "UBNT-UniFi-MIB::unifiIfTable"
           [[inputs.snmp.table.field]]
             is_tag = true
             oid = "UBNT-UniFi-MIB::unifiIfName"
 
-        [inputs.snmp.tagpass]
+        [inputs.snmp.tags]
           influxdb_database = "system"
     CONF
     it 'creates telegraf snmp usw input template file in the consul-template template directory' do
@@ -969,134 +863,100 @@ describe 'resource_metrics_snmp::snmp' do
         #  System name (hostname)
         [[inputs.snmp.field]]
           is_tag = true
-          name = "sysName"
+          name = "name"
           oid = "RFC1213-MIB::sysName.0"
-
-        #  System vendor OID
-        [[inputs.snmp.field]]
-          name = "sysObjectID"
-          oid = "RFC1213-MIB::sysObjectID.0"
 
         #  System description
         [[inputs.snmp.field]]
-          name = "sysDescr"
+          name = "description"
           oid = "RFC1213-MIB::sysDescr.0"
-
-        #  System contact
-        [[inputs.snmp.field]]
-          name = "sysContact"
-          oid = "RFC1213-MIB::sysContact.0"
-
-        #  System location
-        [[inputs.snmp.field]]
-          name = "sysLocation"
-          oid = "RFC1213-MIB::sysLocation.0"
 
         #  System uptime
         [[inputs.snmp.field]]
-          name = "sysUpTime"
-          oid = "RFC1213-MIB::sysUpTime.0"
+          name = "uptime"
+          oid = "HOST-RESOURCES-MIB::hrSystemUptime.0"
 
         #  UAP model
         [[inputs.snmp.field]]
-          name = "unifiApSystemModel"
+          is_tag = true
+          name = "model"
           oid = "UBNT-UniFi-MIB::unifiApSystemModel"
 
         #  UAP firmware version
         [[inputs.snmp.field]]
-          name = "unifiApSystemVersion"
+          is_tag = true
+          name = "version"
           oid = "UBNT-UniFi-MIB::unifiApSystemVersion"
 
         ##
         ## Host Resources
         ##
 
+        #  Number of user sessions
+        [[inputs.snmp.field]]
+          name = "users"
+          oid = "HOST-RESOURCES-MIB::hrSystemNumUsers.0"
+
+        #  Number of process contexts
+        [[inputs.snmp.field]]
+          name = "processes"
+          oid = "HOST-RESOURCES-MIB::hrSystemProcesses.0"
+
+        #  Device Listing
+        [[inputs.snmp.table]]
+          name = "snmp.usg.devices"
+          oid = "HOST-RESOURCES-MIB::hrDeviceTable"
+          [[inputs.snmp.table.field]]
+            oid = "HOST-RESOURCES-MIB::hrDeviceIndex"
+            is_tag = true
+
         #  Total memory
         [[inputs.snmp.field]]
-          name = "memTotal"
+          name = "mem.total"
           oid = "FROGFOOT-RESOURCES-MIB::memTotal.0"
 
         #  Free memory
         [[inputs.snmp.field]]
-          name = "memFree"
+          name = "mem.free"
           oid = "FROGFOOT-RESOURCES-MIB::memFree.0"
 
         #  Buffer memory
         [[inputs.snmp.field]]
-          name = "memBuffer"
+          name = "mem.buffer"
           oid = "FROGFOOT-RESOURCES-MIB::memBuffer.0"
 
         #  Cache memory
         [[inputs.snmp.field]]
-          name = "memCache"
+          name = "mem.cache"
           oid = "FROGFOOT-RESOURCES-MIB::memCache.0"
 
         #  Per-interface traffic, errors, drops
         [[inputs.snmp.table]]
+          name = "snmp.usg.interfaces"
           oid = "IF-MIB::ifTable"
           [[inputs.snmp.table.field]]
             is_tag = true
             oid = "IF-MIB::ifDescr"
 
-            ##
+        #  Per-interface high-capacity (HC) counters
+        [[inputs.snmp.table]]
+          name = "snmp.usg.interfaces.hc"
+          oid = "IF-MIB::ifXTable"
+          [[inputs.snmp.table.field]]
+            oid = "IF-MIB::ifName"
+            is_tag = true
+
+        ##
         ## System Performance
         ##
 
         #  System load averages
         [[inputs.snmp.table]]
+          name = "snmp.usg.load"
           oid = "FROGFOOT-RESOURCES-MIB::loadTable"
           [[inputs.snmp.table.field]]
             is_tag = true
             oid = "FROGFOOT-RESOURCES-MIB::loadDescr"
-
-        ##
-        ## SNMP metrics
-        ##
-
-        #  Number of SNMP messages received
-        [[inputs.snmp.field]]
-          name = "snmpInPkts"
-          oid = "SNMPv2-MIB::snmpInPkts.0"
-
-        #  Number of SNMP Get-Request received
-        [[inputs.snmp.field]]
-          name = "snmpInGetRequests"
-          oid = "SNMPv2-MIB::snmpInGetRequests.0"
-
-        #  Number of SNMP Get-Next received
-        [[inputs.snmp.field]]
-          name = "snmpInGetNexts"
-          oid = "SNMPv2-MIB::snmpInGetNexts.0"
-
-        #  Number of SNMP objects requested
-        [[inputs.snmp.field]]
-          name = "snmpInTotalReqVars"
-          oid = "SNMPv2-MIB::snmpInTotalReqVars.0"
-
-        #  Number of SNMP Get-Response received
-        [[inputs.snmp.field]]
-          name = "snmpInGetResponses"
-          oid = "SNMPv2-MIB::snmpInGetResponses.0"
-
-        #  Number of SNMP messages sent
-        [[inputs.snmp.field]]
-          name = "snmpOutPkts"
-          oid = "SNMPv2-MIB::snmpOutPkts.0"
-
-        #  Number of SNMP Get-Request sent
-        [[inputs.snmp.field]]
-          name = "snmpOutGetRequests"
-          oid = "SNMPv2-MIB::snmpOutGetRequests.0"
-
-        #  Number of SNMP Get-Next sent
-        [[inputs.snmp.field]]
-          name = "snmpOutGetNexts"
-          oid = "SNMPv2-MIB::snmpOutGetNexts.0"
-
-        #  Number of SNMP Get-Response sent
-        [[inputs.snmp.field]]
-          name = "snmpOutGetResponses"
-          oid = "SNMPv2-MIB::snmpOutGetResponses.0"
 
         ##
         ## Interface Details & Metrics
@@ -1104,12 +964,143 @@ describe 'resource_metrics_snmp::snmp' do
 
         #  Ethernet interfaces
         [[inputs.snmp.table]]
+          name = "snmp.usg.interfaces.ethernet"
           oid = "UBNT-UniFi-MIB::unifiIfTable"
           [[inputs.snmp.table.field]]
             is_tag = true
             oid = "UBNT-UniFi-MIB::unifiIfName"
 
-        [inputs.snmp.tagpass]
+        ##
+        ## IP metrics
+        ##
+        #  System-wide IP metrics
+        [[inputs.snmp.table]]
+          index_as_tag = true
+          name = "snmp.usg.ip"
+          oid = "IP-MIB::ipSystemStatsTable"
+
+        ##
+        ## ICMP Metrics
+        ##
+
+        #  ICMP statistics
+        [[inputs.snmp.table]]
+          index_as_tag = true
+          name = "snmp.usg.icmp"
+          oid = "IP-MIB::icmpStatsTable"
+
+        #  ICMP per-type statistics
+        [[inputs.snmp.table]]
+          index_as_tag = true
+          name = "snmp.usg.icmp.msg"
+          oid = "IP-MIB::icmpMsgStatsTable"
+
+        ##
+        ## UDP statistics
+        ##
+
+        #  Datagrams delivered to app
+        [[inputs.snmp.field]]
+          name = "udp.in.datagrams"
+          oid = "UDP-MIB::udpInDatagrams.0"
+
+        #  Datagrams received with no app
+        [[inputs.snmp.field]]
+          name = "udp.ports"
+          oid = "UDP-MIB::udpNoPorts.0"
+
+        #  Datagrams received with error
+        [[inputs.snmp.field]]
+          name = "udp.in.errors"
+          oid = "UDP-MIB::udpInErrors.0"
+
+        #  Datagrams sent
+        [[inputs.snmp.field]]
+          name = "udp.out.datagrams"
+          oid = "UDP-MIB::udpOutDatagrams.0"
+
+        ##
+        ## TCP statistics
+        ##
+
+        #  Number of CLOSED -> SYN-SENT transitions
+        [[inputs.snmp.field]]
+          name = "tcp.open.active"
+          oid = "TCP-MIB::tcpActiveOpens.0"
+
+        #  Number of SYN-RCVD -> LISTEN transitions
+        [[inputs.snmp.field]]
+          name = "tcp.open.passive"
+          oid = "TCP-MIB::tcpPassiveOpens.0"
+
+        #  Number of SYN-SENT/RCVD -> CLOSED transitions
+        [[inputs.snmp.field]]
+          name = "tcp.attempt.fail"
+          oid = "TCP-MIB::tcpAttemptFails.0"
+
+        #  Number of ESTABLISHED/CLOSE-WAIT -> CLOSED transitions
+        [[inputs.snmp.field]]
+          name = "tcp.transition.esttoclosed"
+          oid = "TCP-MIB::tcpEstabResets.0"
+
+        #  Number of ESTABLISHED or CLOSE-WAIT
+        [[inputs.snmp.field]]
+          name = "tcp.conn.established"
+          oid = "TCP-MIB::tcpCurrEstab.0"
+
+        #  Number of segments received
+        [[inputs.snmp.field]]
+          name = "tcp.segments.rec"
+          oid = "TCP-MIB::tcpInSegs.0"
+
+        #  Number of segments sent
+        [[inputs.snmp.field]]
+          name = "tcp.segments.sent"
+          oid = "TCP-MIB::tcpOutSegs.0"
+
+        #  Number of segments retransmitted
+        [[inputs.snmp.field]]
+          name = "tcp.segments.retrans"
+          oid = "TCP-MIB::tcpRetransSegs.0"
+
+        #  Number of segments received with error
+        [[inputs.snmp.field]]
+          name = "tcp.segments.errors"
+          oid = "TCP-MIB::tcpInErrs.0"
+
+        #  Number of segments sent w/RST
+        [[inputs.snmp.field]]
+          name = "tcp.segments.rst"
+          oid = "TCP-MIB::tcpOutRsts.0"
+
+        ##
+        ## IP routing statistics
+        ##
+
+        #  Number of valid routing entries
+        [[inputs.snmp.field]]
+          name = "ip.route.valid"
+          oid = "IP-FORWARD-MIB::inetCidrRouteNumber.0"
+
+        #  Number of valid entries discarded
+        [[inputs.snmp.field]]
+          name = "ip.route.entry.discard"
+          oid = "IP-FORWARD-MIB::inetCidrRouteDiscards.0"
+
+        #  Number of valid forwarding entries
+        [[inputs.snmp.field]]
+          name = "ip.route.forward"
+          oid = "IP-FORWARD-MIB::ipForwardNumber.0"
+
+        ##
+        ## IP routing statistics
+        ##
+        # Number of valid routes discarded
+        [[inputs.snmp.field]]
+          name = "ip.route.discard"
+            oid = "RFC1213-MIB::ipRoutingDiscards.0"
+
+        [inputs.snmp.tags]
           influxdb_database = "system"
     CONF
     it 'creates telegraf snmp usg input template file in the consul-template template directory' do
